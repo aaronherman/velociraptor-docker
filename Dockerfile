@@ -25,7 +25,6 @@ RUN apt-get update && \
 WORKDIR /velociraptor 
 COPY ./entrypoint.sh .
 RUN chmod +x entrypoint.sh
-COPY server-merge.config.txt .
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
