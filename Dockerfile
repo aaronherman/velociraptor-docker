@@ -2,10 +2,11 @@ FROM ubuntu:20.04
 LABEL version="Velociraptor v0.6.9"
 LABEL description="Velociraptor server in a Docker container"
 LABEL maintainer="Wes Lambert, @therealwlambert"
-COPY ./entrypoint .
-RUN chmod +x entrypoint && \
-    apt-get update && \
-    apt-get install -y curl wget jq rsync && \
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y curl wget jq rsync nginx git && \
+    mkdir /velociraptor && \
     # Create dirs for Velo binaries
     mkdir -p /opt/velociraptor && \
     for i in linux mac windows; do mkdir -p /opt/velociraptor/$i; done && \
@@ -22,5 +23,11 @@ RUN chmod +x entrypoint && \
     apt-get remove -y --purge curl wget jq && \
     apt-get clean
 WORKDIR /velociraptor 
-CMD ["/entrypoint"]
+COPY ./entrypoint.sh .
+RUN chmod +x entrypoint.sh
+COPY server-merge.config.txt .
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
+EXPOSE 80
+
+CMD ["/velociraptor/entrypoint.sh"]

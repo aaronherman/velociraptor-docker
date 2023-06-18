@@ -1,11 +1,6 @@
 #!/bin/bash
-set -e
-BIND_ADDRESS="0.0.0.0"
-PUBLIC_PATH="public"
-LOG_DIR="."
-DATASTORE_LOCATION="./"
-FILESTORE_DIRECTORY="./"
 CLIENT_DIR="/velociraptor/clients"
+CONFIG_PATCH='{"Frontend":{"public_path":"public","hostname":"VelociraptorServer","use_plain_http":true},"API":{"bind_address":"0.0.0.0"},"GUI":{"bind_address":"0.0.0.0","use_plain_http":true,"base_path":"/gui"},"Monitoring":{"bind_address":"0.0.0.0"},"Logging":{"output_directory":"./","separate_logs_per_component":true},"Client":{"server_urls":["https://VelociraptorServer:8000/"],"use_self_signed_ssl":false},"Datastore":{"location":"./","filestore_directory":"./"}}'
 
 # Move binaries into place
 cp /opt/velociraptor/linux/velociraptor . && chmod +x velociraptor
@@ -15,10 +10,10 @@ mkdir -p $CLIENT_DIR/windows && rsync -a /opt/velociraptor/windows/velociraptor_
 
 # If no existing server config, set it up
 if [ ! -f server.config.yaml ]; then
-	./velociraptor config generate > server.config.yaml --merge '{"Frontend":{"public_path":"'$PUBLIC_PATH'", "hostname":"'$VELOX_FRONTEND_HOSTNAME'"},"API":{"bind_address":"'$BIND_ADDRESS'"},"GUI":{"bind_address":"'$BIND_ADDRESS'"},"Monitoring":{"bind_address":"'$BIND_ADDRESS'"},"Logging":{"output_directory":"'$LOG_DIR'","separate_logs_per_component":true},"Client":{"server_urls":["'$VELOX_SERVER_URL'"],"use_self_signed_ssl":true}, "Datastore":{"location":"'$DATASTORE_LOCATION'", "filestore_directory":"'$FILESTORE_DIRECTORY'"}}'
+	./velociraptor config generate > server.config.yaml --merge $CONFIG_PATCH
         #sed -i "s#https://localhost:8000/#$VELOX_CLIENT_URL#" server.config.yaml
 	sed -i 's#/tmp/velociraptor#.#'g server.config.yaml
-	./velociraptor --config server.config.yaml user add $VELOX_USER $VELOX_PASSWORD --role $VELOX_ROLE
+	./velociraptor --config server.config.yaml user add $VELOX_USER $VELOX_PASSWORD --role=$VELOX_ROLE
 fi
 
 # Re-generate client config in case server config changed
